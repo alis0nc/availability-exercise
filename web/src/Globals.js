@@ -1,1 +1,2 @@
-export const TimeFormatString = 'M/D/YYYY h:mm a';
+export const DateFormatString = 'M/D/YYYY'
+export const TimeFormatString = `${DateFormatString} h:mm a`;
