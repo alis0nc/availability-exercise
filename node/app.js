@@ -43,4 +43,5 @@ function transformAvailability(availability) {
 }
 
 app.today = today;
+app.transformAvailability = transformAvailability;
 module.exports = app;
