@@ -1,0 +1,1 @@
+export const TimeFormatString = 'M/D/YYYY h:mm a';
