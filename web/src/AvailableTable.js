@@ -9,12 +9,15 @@ const AvailableTable = (props) => {
     <table className="advisors table">
       <Header />
       <tbody>
-        { available && Object.keys(available).sort()
-          .map((advisorID) =>
-            <Row key={ advisorID }
-            advisorID={ advisorID }
-            availableTimes={ available[advisorID].sort() } />
-          )
+        { available && available
+          .map((availableEntry) => {
+            const { advisorID, availableTimes } = availableEntry;
+            return (
+              <Row key={ advisorID }
+              advisorID={ advisorID }
+              availableTimes={ availableTimes } />
+            )
+          })
         }
       </tbody>
     </table>

@@ -29,15 +29,28 @@ function today() {
 }
 
 function transformAvailability(availability) {
-    const result = {};
+    // Transforms the upstream API response into something with field names
+    // and a structure that more closely resembles the frontend's presentation,
+    // so we don't have to do much processing on the frontend.
+    const advisorBuckets = {};
+    const result = [];
+    // Bucket timeslots by advisor ID
     Object.keys(availability).map((availDate) => {
         Object.keys(availability[availDate]).map((timeslot) => {
             const advisorID = availability[availDate][timeslot];
-            if (!result.hasOwnProperty(advisorID)) {
-                result[advisorID] = [];
+            if (!advisorBuckets.hasOwnProperty(advisorID)) {
+                advisorBuckets[advisorID] = [];
             }
-            result[advisorID].push(timeslot);
+            advisorBuckets[advisorID].push(timeslot);
         });
+    });
+    Object.keys(advisorBuckets).sort().map((advisorID) => {
+        const advisorAvailability = {
+            advisorID: advisorID,
+            availableTimes: advisorBuckets[advisorID].sort()
+        };
+        console.log(advisorAvailability);
+        result.push(advisorAvailability);
     });
     return result;
 }

@@ -20,16 +20,30 @@ describe("transformAvailability", () => {
             "2019-04-05T18:00:00-04:00": 417239
         }
     };
-    const expectedKeys = ["372955", "399956", "417239"];
-    const expected417239 = [
-        "2019-04-05T11:30:00-04:00",
-        "2019-04-05T16:00:00-04:00",
-        "2019-04-05T18:00:00-04:00"
+    const expected = [
+        {
+            advisorID: "372955",
+            availableTimes: [
+                "2019-04-04T11:00:00-04:00",
+                "2019-04-04T13:00:00-04:00"
+            ]
+        },
+        {
+            advisorID: "399956",
+            availableTimes: [
+                "2019-04-04T11:30:00-04:00"
+            ]
+        },
+        {
+            advisorID: "417239",
+            availableTimes: [
+                "2019-04-05T11:30:00-04:00",
+                "2019-04-05T16:00:00-04:00",
+                "2019-04-05T18:00:00-04:00"
+            ]
+        }
     ];
-    it("transforms the upstream availability response to have advisor IDs as keys", () => {
-        expect(Object.keys(app.transformAvailability(input)).sort()).toEqual(expectedKeys);
-    });
-    it("...and the values for a certain advisor ID should be the open timeslots", () => {
-        expect(app.transformAvailability(input)["417239"].sort()).toEqual(expected417239);
+    it("transforms the upstream availability response to objects with an advisorID and a list of available timeslots", () => {
+        expect(app.transformAvailability(input)).toEqual(expected);
     });
 });
