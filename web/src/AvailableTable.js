@@ -42,7 +42,7 @@ const Row = (props) => {
         <ul className="list-unstyled">
           { availableTimes
             && availableTimes.map(
-              (t) => <AvailableTime time={ t } />)
+              (t) => <AvailableTime key={ t } time={ t } />)
           }
         </ul>
       </td>
