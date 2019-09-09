@@ -3,8 +3,10 @@ const cors = require("cors");
 const bodyParser = require("body-parser");
 const moment = require("moment");
 const axios = require("axios");
+const _ = require("lodash");
 
 const availabilityApiUrl = "https://www.thinkful.com/api/advisors/availability";
+const bookings = [];
 
 const app = express();
 app.use(cors());
@@ -24,6 +26,61 @@ app.get("/available", (_, res, next) => {
         }).catch(next);
 });
 
+app.post("/book", (req, res, next) => {
+    const { name, advisorID, time } = req.body;
+    // error out if we don't have a valid name, advisorID, and time
+    if (!name || !advisorID || !time) {
+        console.log('You must send a valid name, advisorID, and time');
+        res.status(400).send({
+            error: 'You must send a valid name, advisorID, and time'
+        });
+    }
+    // error out if this time with this advisor is already booked with somebody else,
+    if (bookings.filter((booking) =>
+        booking.advisorID == advisorID
+        && booking.time == time
+        && booking.name != name
+    ).length) {
+        res.status(400).send({
+            error: 'Someone else has already booked this time'
+        });
+    }
+    // or just return the booking if it's already booked with the same person
+    else if (bookings.filter((booking) =>
+        booking.advisorID == advisorID
+        && booking.time == time
+        && booking.name == name
+    ).length) {
+        res.send({
+            name, advisorID, time
+        });
+    } else {
+        axios.get(availabilityApiUrl).then((response) => {
+            // error out if the requested time is not available with the requested advisor
+            const date = moment(time).format('YYYY-MM-DD');
+            const advisorFromResponse = _.get(response.data, [date, time], null);
+            if (!advisorFromResponse || advisorFromResponse != advisorID) {
+                res.status(400).send({
+                    error: 'The requested time slot is not available with the requested advisor'
+                });
+            } else {
+                bookings.push({
+                    name, advisorID, time
+                });
+                res.send({
+                    name, advisorID, time
+                });
+            }
+        });
+    }
+});
+
+app.get("/bookings", (_, res) => {
+    res.send({
+        bookings
+    });
+})
+
 function today() {
     return moment().format();
 }
@@ -35,13 +92,18 @@ function transformAvailability(availability) {
     const advisorBuckets = {};
     const result = [];
     // Bucket timeslots by advisor ID
-    Object.keys(availability).map((availDate) => {
-        Object.keys(availability[availDate]).map((timeslot) => {
-            const advisorID = availability[availDate][timeslot];
-            if (!advisorBuckets.hasOwnProperty(advisorID)) {
-                advisorBuckets[advisorID] = [];
+    Object.keys(availability).map((date) => {
+        Object.keys(availability[date]).map((time) => {
+            const advisorID = availability[date][time];
+            if (!bookings.filter((booking) =>
+                booking.time == time
+                && booking.advisorID == advisorID
+            ).length) {
+                if (!advisorBuckets.hasOwnProperty(advisorID)) {
+                    advisorBuckets[advisorID] = [];
+                }
+                advisorBuckets[advisorID].push(time);
             }
-            advisorBuckets[advisorID].push(timeslot);
         });
     });
     Object.keys(advisorBuckets).sort().map((advisorID) => {
@@ -49,7 +111,6 @@ function transformAvailability(availability) {
             advisorID: advisorID,
             availableTimes: advisorBuckets[advisorID].sort()
         };
-        console.log(advisorAvailability);
         result.push(advisorAvailability);
     });
     return result;
