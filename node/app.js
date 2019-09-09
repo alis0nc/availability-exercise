@@ -76,9 +76,7 @@ app.post("/book", (req, res, next) => {
 });
 
 app.get("/bookings", (_, res) => {
-    res.send({
-        bookings
-    });
+    res.send(bookings);
 })
 
 function today() {
