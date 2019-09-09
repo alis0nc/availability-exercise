@@ -3,8 +3,7 @@ import React from 'react';
 import { TimeFormatString } from './Globals';
 
 const AvailableTable = (props) => {
-  const { available } = props;
-  console.log(available);
+  const { available, cb } = props;
   return (
     <table className="advisors table">
       <Header />
@@ -15,7 +14,8 @@ const AvailableTable = (props) => {
             return (
               <Row key={ advisorID }
               advisorID={ advisorID }
-              availableTimes={ availableTimes } />
+              availableTimes={ availableTimes }
+              cb={ cb } />
             )
           })
         }
@@ -34,7 +34,7 @@ const Header = () =>
   </thead>
 
 const Row = (props) => {
-  const { advisorID, availableTimes } = props;
+  const { advisorID, availableTimes, cb } = props;
   return (
     <tr>
       <td>{ advisorID }</td>
@@ -42,7 +42,7 @@ const Row = (props) => {
         <ul className="list-unstyled">
           { availableTimes
             && availableTimes.map(
-              (t) => <AvailableTime key={ t } time={ t } />)
+              (t) => <AvailableTime key={ t } time={ t } cb={ cb } advisorID={ advisorID } />)
           }
         </ul>
       </td>
@@ -50,14 +50,15 @@ const Row = (props) => {
   )
 }
 
-
 const AvailableTime = (props) => {
-  const { time } = props;
-  const timeFormatted = moment(time).format(TimeFormatString);
+  const { advisorID, time, cb } = props;
+  const timeFormatted = time ? moment(time).format(TimeFormatString) : null;
   return (
     <li>
-      <time dateTime="{ props.time }" className="book-time">{ timeFormatted }</time>
-      <button className="book btn-small btn-primary">Book</button>
+      <time dateTime="{ time }" className="book-time">{ timeFormatted }</time>
+      <button
+        className="book btn-small btn-primary"
+        onClick={() => {cb(advisorID, time)}}>Book</button>
     </li>
   );
 }

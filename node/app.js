@@ -34,6 +34,7 @@ app.post("/book", (req, res, next) => {
         res.status(400).send({
             error: 'You must send a valid name, advisorID, and time'
         });
+        return;
     }
     // error out if this time with this advisor is already booked with somebody else,
     if (bookings.filter((booking) =>
@@ -44,9 +45,10 @@ app.post("/book", (req, res, next) => {
         res.status(400).send({
             error: 'Someone else has already booked this time'
         });
+        return;
     }
     // or just return the booking if it's already booked with the same person
-    else if (bookings.filter((booking) =>
+    if (bookings.filter((booking) =>
         booking.advisorID == advisorID
         && booking.time == time
         && booking.name == name
@@ -54,25 +56,25 @@ app.post("/book", (req, res, next) => {
         res.send({
             name, advisorID, time
         });
-    } else {
-        axios.get(availabilityApiUrl).then((response) => {
-            // error out if the requested time is not available with the requested advisor
-            const date = moment(time).format('YYYY-MM-DD');
-            const advisorFromResponse = _.get(response.data, [date, time], null);
-            if (!advisorFromResponse || advisorFromResponse != advisorID) {
-                res.status(400).send({
-                    error: 'The requested time slot is not available with the requested advisor'
-                });
-            } else {
-                bookings.push({
-                    name, advisorID, time
-                });
-                res.send({
-                    name, advisorID, time
-                });
-            }
-        });
+        return;
     }
+    axios.get(availabilityApiUrl).then((response) => {
+        // error out if the requested time is not available with the requested advisor
+        const date = moment(time).format('YYYY-MM-DD');
+        const advisorFromResponse = _.get(response.data, [date, time], null);
+        if (!advisorFromResponse || advisorFromResponse != advisorID) {
+            res.status(400).send({
+                error: 'The requested time slot is not available with the requested advisor'
+            });
+        } else {
+            bookings.push({
+                name, advisorID, time
+            });
+            res.send({
+                name, advisorID, time
+            });
+        }
+    });
 });
 
 app.get("/bookings", (_, res) => {

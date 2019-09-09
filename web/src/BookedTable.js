@@ -2,14 +2,26 @@ import * as moment from 'moment';
 import React from 'react';
 import { TimeFormatString } from './Globals';
 
-const BookedTable = () =>
-    <table className="bookings table">
-        <Header />
-        <tbody>
-            <Row advisorID={ 420 } studentName={ 'Bart Simpson' } time={ moment() } />
-            <Row advisorID={ 69 } studentName={ 'Tina Belcher' } time={ moment().add(1, 'days') } />
-        </tbody>
-    </table>
+const BookedTable = (props) => {
+    const { booked } = props;
+    return (
+        <table className="bookings table">
+            <Header />
+            <tbody>
+                { booked
+                  && booked.map((booking) => {
+                      const { name, advisorID, time } = booking;
+                      return (
+                        <Row key={`${advisorID}_${name}_${time}`}
+                          advisorID={ advisorID } studentName={ name } time={ time } />
+                      )
+                  })
+                }
+            </tbody>
+        </table>
+    );
+}
+
 
 const Header = () =>
     <thead>
@@ -22,7 +34,7 @@ const Header = () =>
 
 const Row = (props) => {
     const { advisorID, studentName, time } = props;
-    const timeFormatted = time ? time.format(TimeFormatString) : null;
+    const timeFormatted = time ? moment(time).format(TimeFormatString) : null;
     return (
         <tr>
             <td>{ advisorID }</td>
